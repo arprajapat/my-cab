@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+
+    <script src="../node_modules/angular/angular.min.js"></script>
+    <script src="../node_modules/angular-resource/angular-resource.min.js"></script>
+    <script src="../node_modules/ng-notify/dist/ng-notify.min.js"></script>
+
+    <script src="/javascripts/driverApp.js"></script>
+    <script src="/javascripts/service/services.js"></script>
+
+
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="../node_modules/ng-notify/dist/ng-notify.min.css">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+
+</head>
+
+<body ng-app="app" ng-controller="DriverAppController">
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">My-Cab</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Driver</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">Driver Info</div>
+            <div class="panel-body">
+                <div class="col-xs-12 col-md-12 barChart">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="driverId">Driver Id:</label>
+                            <input type="number" ng-model="driverId" class="form-control" id="driverId">
+                            <button class="btn btn-primary" ng-click="refresh()" >Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-4"><strong>WAITING</strong></div>
+        <div class="col-md-4"><strong>ONGOING</strong></div>
+        <div class="col-md-4"><strong>COMPLETED</strong></div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div ng-repeat="request in requests.waiting">
+                <table class="table table-bordered">
+                    <tbody>
+                    <tr>
+                        <td>Req ID:{{request.id}}</td>
+                        <td>Cust ID:{{request.customerId}}</td>
+                    </tr>
+                    <tr>
+                        <td>Time:{{getTime(request.requestedAt)}}</td>
+                        <td><button type="button" ng-click="acceptRequest(request.id)" class="btn btn-primary">Select</button></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div ng-repeat="request in requests.accepted">
+                <table class="table table-bordered" ng-hide="isCompleted(request.acceptedAt)">
+                    <tbody>
+                    <tr>
+                        <td>Req ID:{{request.id}}</td>
+                        <td>Cust ID:{{request.customerId}}</td>
+                    </tr>
+                    <tr>
+                        <td>Request:{{getTime(request.requestedAt)}}</td>
+                        <td>Accept:{{getTime(request.acceptedAt)}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div ng-repeat="request in requests.accepted">
+                <table class="table table-bordered" ng-show="isCompleted(request.acceptedAt)">
+                    <tbody>
+                    <tr>
+                        <td>Req ID: {{request.id}}</td>
+                        <td>Cust ID: {{request.customerId}}</td>
+                    </tr>
+                    <tr>
+                        <td>Requested: {{getTime(request.requestedAt)}}</td>
+                        <td>Accepted: {{getTime(request.acceptedAt)}}</td>
+                    </tr>
+                    <tr>
+                        <td>Completed: {{getCompleteTime(request.acceptedAt)}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
