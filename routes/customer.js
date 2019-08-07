@@ -7,7 +7,7 @@ router.get('/', (req, res, next) => {
   res.render('customerapp', { title: 'Customer App' });
 });
 
-router.post('/:customerId/ride', (req, res, next) => {
+router.post('/:customerId/ride', async (req, res, next) => {
   //Todo: add data sanity and validation check
   const customerId = req.params.customerId;
   const { positionX, positionY } = req.body
@@ -19,13 +19,17 @@ router.post('/:customerId/ride', (req, res, next) => {
     status: 'waiting',
     requestedAt: new Date()
   }
-  
-  return models.ride.create(rideObj).then((ride) => {
+  try {
+    const waitingRides = await models.ride.count({ where: {status: 'waiting' }});
+    if(waitingRides > 10) {
+      res.end(JSON.stringify({message: 'Rides not available. Try again later'}))
+    }
+
+    const ride = await models.ride.create(rideObj);
     res.status(201).end(JSON.stringify({data:ride, message: 'Ride requested successfully'}))
-  },(err) => {
-    console.log("error while creating user:",err);
+  } catch (error) {
     res.status(500).end(JSON.stringify({err:"Internal server error"}));
-  });
+  }
 })
 
 module.exports = router;

@@ -21,29 +21,42 @@ router.get('/:driverId/ride', (req, res, next) => {
 })
 
 // This should be put method
-router.post('/:driverId/ride/:rideId', (req, res, next) => {
-    // There should be check here if any ongoing ride is there 
-    // before accepting new ride 
+router.post('/:driverId/ride/:rideId', async (req, res, next) => {
+    
     const { driverId, rideId } = req.params;
     const rideObj = {
         status: 'accepted',
         acceptedAt: new Date(),
         driverId,
     };
-    
-    return models.ride.update(rideObj, { where: {
-        id: rideId,
-        status: 'waiting'
-    }}).then(([affectedCount]) => {
+    try {
+        const ongoingRides = await models.ride.count({ 
+            where: {
+                driverId,
+                status: 'accepted', 
+                acceptedAt: {
+                    [Op.gte] : new Date() - 300000
+                },
+            }
+        });
+        if(ongoingRides > 0) {
+            res.end(JSON.stringify({message:"You already have ongoing ride"}));
+        }
+
+        const [ affectedCount ] = await models.ride.update(rideObj, { where: {
+            id: rideId,
+            status: 'waiting'
+        }})
+
         if(affectedCount === 0) {
-            res.status(400).end(JSON.stringify({message:"Ride is no longer waiting"}));
+            res.end(JSON.stringify({message:"Ride is no longer waiting"}));
         } else {
             res.end(JSON.stringify({message:"Ride Started"}));
         }
-      }, (err) => {
-        console.log(err);
+
+    } catch (error) {
         res.status(500).end(JSON.stringify({message:"Internal server error"}));
-    });
+    }
 })
 
 module.exports = router;
