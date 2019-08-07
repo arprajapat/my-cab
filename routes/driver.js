@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const models  = require('../models');
 const Sequelize = require("sequelize")
+const service = require('../services/service')
 const Op = Sequelize.Op;
 
 router.get('/', (req, res, next) => {
@@ -9,18 +10,29 @@ router.get('/', (req, res, next) => {
 });
 
 router.get('/:driverId/ride', (req, res, next) => {
-    const { driverId } = req.params;
+    const driverId = parseInt(req.params.driverId);
+
+    const rideIds = service.driverRideMap.has(driverId) 
+        ? service.driverRideMap.get(driverId): [];
 
     return models.ride.findAll({where: {
-        [Op.or]: [{driverId}, {status: 'waiting'}],
+        [Op.or]: [{
+            driverId
+        }, {
+            [Op.and]:[{
+                status: 'waiting',
+                id: {
+                    [Op.in]:rideIds
+                }
+            }]
+        }],
     }}).then((rides) => {
         res.end(JSON.stringify({data:rides}))
       }, (err) => {
-        res.status(500).end();
+          res.status(500).end();
     });
 })
 
-// This should be put method
 router.post('/:driverId/ride/:rideId', async (req, res, next) => {
     
     const { driverId, rideId } = req.params;

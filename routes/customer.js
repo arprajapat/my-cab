@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const models  = require('../models');
+const service = require('../services/service')
 
 
 router.get('/', (req, res, next) => {
@@ -26,6 +27,9 @@ router.post('/:customerId/ride', async (req, res, next) => {
     }
 
     const ride = await models.ride.create(rideObj);
+    
+    // assign ride to nearby drivers
+    service.assignRideToNearestDriver(ride);
     res.status(201).end(JSON.stringify({data:ride, message: 'Ride requested successfully'}))
   } catch (error) {
     res.status(500).end(JSON.stringify({err:"Internal server error"}));
